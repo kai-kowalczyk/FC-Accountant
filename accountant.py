@@ -1,4 +1,5 @@
 import sys
+ALLOWED_ACTIONS = ('saldo', 'zakup', 'sprzedaz', 'stop', 'konto', 'magazyn', 'przeglad')
 
 logs = [] #historia operacji
 
@@ -11,9 +12,14 @@ store = {
 
 while True:
     action = input('Jaką akcję chcesz wykonać? (saldo/zakup/sprzedaz/stop)')
+
+    if action not in ALLOWED_ACTIONS:
+        print('Akcja niedozwolona! Wybierz jedną z wymienionych: saldo/zakup/sprzedaz/stop.')
+        continue
     if action == 'stop':
         print('Koniec działania programu!')
         break #przejscie do podsumowania
+
     elif action == 'saldo':
         balance_change = float(input('Wprowadź kwotę o jaką zmienia się stan konta. W przypadku wypłaty z konta poprzedź kwotę znakiem minus ("-"): '))
         comment = input('Komentarz do zmiany salda: ')
@@ -21,11 +27,23 @@ while True:
             print('Za mało środków na koncie!')
         logs.append(f'Zmiana saldo o: {balance_change} zł, komentarz: {comment}')
         account_balance = account_balance + balance_change
+
     elif action == 'zakup':
         product_id = input('Wprowadź nazwę produktu: ')
         price = float(input('Wprowadź cenę jednostkową produktu: '))
         quantity = int(input('Wprowadź liczbę sztuk zakupionego produktu: '))
+        total_price = price * quantity
+        if total_price > account_balance:
+            print(f'Za mało środków na koncie ({account_balance}), by zakupić produkty w cenie: {total_price}.')
+        else:
+            account_balance = account_balance - total_price
+            if not store.get(product_id):
+                store[product_id] = {'quantity': quantity, 'price': price}
+            else:
+                store_product_quantity = store[product_id]['quantity']
+                store[product_id] = {'quantity': store_product_quantity + quantity, 'price': price}
         logs.append(f'Zakupiono {quantity} szt. produktu {product_id} o wartości {price} zł/szt.')
+        
     elif action == 'sprzedaz':
         product_id = input('Wprowadź nazwę produktu: ')
         price = int(input('Wprowadź cenę jednostkową produktu (w groszach): '))
