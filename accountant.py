@@ -1,4 +1,5 @@
 import sys
+import pprint
 ALLOWED_ACTIONS = ('saldo', 'zakup', 'sprzedaz', 'stop', 'konto', 'magazyn', 'przeglad')
 
 mode = sys.argv[1]
@@ -17,11 +18,12 @@ while True:
     if action not in ALLOWED_ACTIONS:
         print('Akcja niedozwolona! Wybierz jedną z wymienionych: saldo/zakup/sprzedaz/stop.')
         continue
+
     if action == 'stop':
         print('Koniec działania programu!')
         break #przejscie do podsumowania
 
-    elif action == 'saldo':
+    if action == 'saldo':
         balance_change = float(input('Wprowadź kwotę o jaką zmienia się stan konta. W przypadku wypłaty z konta poprzedź kwotę znakiem minus ("-"): '))
         comment = input('Komentarz do zmiany salda: ')
         if (balance_change < 0) and (account_balance + balance_change < 0):
@@ -59,19 +61,18 @@ while True:
         if not store.get(product_id):
             print('Brak produktu w magazynie!')
             continue
-        elif store.get(product_id)['quantity'] < quantity:
-            store_product_quantity = store(product_id)['quantity']
+        if store.get(product_id)['quantity'] < quantity:
+            store_product_quantity = store.get(product_id)['quantity']
             print(f'Niewystarczająca ilość produktu w magazynie. Pozostało: {store_product_quantity} szt.')
             continue
-        elif price < 0:
+        if price < 0:
             print('Błąd! Cena musi być liczbą dodatnią.')
             continue
-        elif quantity < 0:
+        if quantity < 0:
             print('Błąd! Liczba sztuk produktu musi być większa od 0.')
             continue
-        else:
-            account_balance += quantity * price
-            store[product_id] = {'quantity': store.get(product_id)['quantity'] - quantity, 'price': price}
+        account_balance += quantity * price
+        store[product_id] = {'quantity': store.get(product_id)['quantity'] - quantity, 'price': price}
         if store.get(product_id)['quantity'] == 0:
             del store[product_id]
         logs.append(f'Sprzedano {quantity} szt. produktu {product_id} o wartości {price} zł/szt.')
@@ -91,7 +92,7 @@ elif mode == 'konto':
     print(f'Stan konta: {account_balance}')
 
 elif mode == 'magazyn':
-    print(f'Stan magazynu: {store}')
+    pprint.pprint(store)
 
 elif mode == 'przeglad':
     print(f'Historia operacji: {logs}')
